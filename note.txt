@@ -1,0 +1,38 @@
+-- =========================================
+-- CULTES
+-- =========================================
+
+ALTER TABLE cultes
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- DEPENSES
+-- =========================================
+
+ALTER TABLE depenses
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- FONDS
+-- =========================================
+
+ALTER TABLE fonds
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- ENGAGEMENTS FONDS
+-- =========================================
+
+ALTER TABLE engagements_fonds
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- VERSEMENTS FONDS
+-- =========================================
+
+ALTER TABLE versements_fonds
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';

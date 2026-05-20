@@ -32,15 +32,15 @@ $total_cultes = $pdo->query("
     FROM cultes
 ")->fetchColumn();
 
-$total_offrande = $pdo->query("
-    SELECT SUM(offrande)
-    FROM cultes
-")->fetchColumn() ?? 0;
+// $total_offrande = $pdo->query("
+//     SELECT SUM(offrande)
+//     FROM cultes
+// ")->fetchColumn() ?? 0;
 
-$total_dime = $pdo->query("
-    SELECT SUM(dime)
-    FROM cultes
-")->fetchColumn() ?? 0;
+// $total_dime = $pdo->query("
+//     SELECT SUM(dime)
+//     FROM cultes
+// ")->fetchColumn() ?? 0;
 
 $total_sociale = $pdo->query("
     SELECT SUM(sociale)

@@ -1,133 +1,297 @@
 <?php
+
 require_once '../../core/auth.php';
 require_once '../../config/database.php';
 
 $action = $_GET['action'] ?? '';
-$id = $_GET['id'] ?? 0;
+$id = (int)($_GET['id'] ?? 0);
 
 $motif = '';
 $montant = '';
-$date = '';
+$date = date('Y-m-d');
+$beneficiaire = '';
+$devise = 'CDF';
+
+$error = '';
+
+
+// ======================================
+// EDIT
+// ======================================
 
 if($action == 'edit'){
-    $stmt = $pdo->prepare("SELECT * FROM depenses WHERE id=?");
+
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM depenses
+        WHERE id = ?
+    ");
+
     $stmt->execute([$id]);
+
     $d = $stmt->fetch();
 
-    $motif = $d['motif'];
-    $montant = $d['montant'];
-    $date = $d['date_depense'];
+    if($d){
+
+        $motif = $d['motif'];
+        $montant = $d['montant'];
+        $date = $d['date_depense'];
+        $beneficiaire = $d['beneficiaire'];
+        $devise = $d['devise'];
+    }
 }
+
+
+// ======================================
+// SAVE
+// ======================================
 
 if(isset($_POST['save'])){
 
-    if($action == 'create'){
+    $motif = trim($_POST['motif']);
+    $montant = (float)$_POST['montant'];
+    $date = $_POST['date'];
+    $beneficiaire = trim($_POST['beneficiaire']);
+    $devise = $_POST['devise'];
 
-        $stmt = $pdo->prepare("INSERT INTO depenses(motif,montant,date_depense) VALUES(?,?,?)");
-        $stmt->execute([$_POST['motif'],$_POST['montant'],$_POST['date']]);
+    try{
 
-    } else {
+        if($action == 'create'){
 
-        $stmt = $pdo->prepare("UPDATE depenses SET motif=?,montant=?,date_depense=? WHERE id=?");
-        $stmt->execute([$_POST['motif'],$_POST['montant'],$_POST['date'],$id]);
+            $stmt = $pdo->prepare("
+                INSERT INTO depenses(
+                    motif,
+                    montant,
+                    beneficiaire,
+                    date_depense,
+                    devise
+                )
+                VALUES(?,?,?,?,?)
+            ");
+
+            $stmt->execute([
+                $motif,
+                $montant,
+                $beneficiaire,
+                $date,
+                $devise
+            ]);
+
+        }else{
+
+            $stmt = $pdo->prepare("
+                UPDATE depenses SET
+                    motif = ?,
+                    montant = ?,
+                    beneficiaire = ?,
+                    date_depense = ?,
+                    devise = ?
+                WHERE id = ?
+            ");
+
+            $stmt->execute([
+                $motif,
+                $montant,
+                $beneficiaire,
+                $date,
+                $devise,
+                $id
+            ]);
+        }
+
+        header("Location: ../depenses/");
+        exit;
+
+    }catch(Exception $e){
+
+        $error = $e->getMessage();
     }
+}
+
+
+// ======================================
+// DELETE
+// ======================================
+
+if($action == 'delete'){
+
+    $stmt = $pdo->prepare("
+        DELETE FROM depenses
+        WHERE id = ?
+    ");
+
+    $stmt->execute([$id]);
 
     header("Location: ../depenses/");
     exit;
 }
 
-if($action == 'delete'){
-    $pdo->prepare("DELETE FROM depenses WHERE id=?")->execute([$id]);
-    header("Location: ../depenses/");
-}
-
 require_once '../../layouts/header.php';
 require_once '../../layouts/navbar_sidebar.php';
+
 ?>
+
 <div class="container py-5">
 
     <div class="row justify-content-center">
 
         <div class="col-lg-12">
 
-            <!-- CARD -->
             <div class="card shadow-lg border-0 rounded-4">
 
                 <!-- HEADER -->
                 <div class="card-header bg-dark text-white py-3 rounded-top-4">
 
                     <h4 class="mb-0">
+
                         <i class="bi bi-cash-stack"></i>
-                        Gestion des Dépenses
+
+                        <?= $action == 'edit'
+                            ? 'Modifier la dépense'
+                            : 'Nouvelle dépense' ?>
+
                     </h4>
 
                 </div>
 
+
                 <!-- BODY -->
                 <div class="card-body p-4">
 
+                    <?php if($error): ?>
+
+                    <div class="alert alert-danger">
+
+                        <?= $error ?>
+
+                    </div>
+
+                    <?php endif; ?>
+
+
                     <form method="POST">
 
-                        <!-- MOTIF -->
-                        <div class="mb-3">
+                        <div class="row">
 
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-chat-left-text"></i>
-                                Motif de la dépense
-                            </label>
+                            <!-- MOTIF -->
+                            <div class="col-md-6 mb-3">
 
-                            <input type="text" name="motif" value="<?= $motif ?>" class="form-control form-control-lg"
-                                placeholder="Ex: Achat matériel, transport...">
+                                <label class="form-label fw-semibold">
 
-                        </div>
+                                    <i class="bi bi-chat-left-text"></i>
+                                    Motif de la dépense
 
-                        <!-- MONTANT -->
-                        <div class="mb-3">
+                                </label>
 
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-currency-dollar"></i>
-                                Montant
-                            </label>
+                                <input type="text" name="motif" value="<?= htmlspecialchars($motif) ?>"
+                                    class="form-control form-control-lg" placeholder="Ex: Achat matériel, transport..."
+                                    required>
 
-                            <div class="input-group input-group-lg">
+                            </div>
 
-                                <span class="input-group-text">
-                                    $
-                                </span>
 
-                                <input type="number" name="montant" value="<?= $montant ?>" class="form-control"
-                                    placeholder="0.00">
+                            <!-- BENEFICIAIRE -->
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label fw-semibold">
+
+                                    <i class="bi bi-person"></i>
+                                    Bénéficiaire
+
+                                </label>
+
+                                <input type="text" name="beneficiaire" value="<?= htmlspecialchars($beneficiaire) ?>"
+                                    class="form-control form-control-lg" placeholder="Nom du bénéficiaire">
 
                             </div>
 
                         </div>
 
-                        <!-- DATE -->
-                        <div class="mb-4">
 
-                            <label class="form-label fw-semibold">
-                                <i class="bi bi-calendar-event"></i>
-                                Date de la dépense
-                            </label>
+                        <div class="row">
 
-                            <input type="date" name="date" value="<?= $date ?>" class="form-control form-control-lg">
+                            <!-- MONTANT -->
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label fw-semibold">
+
+                                    <!-- <i class="bi bi-currency-dollar"></i> -->
+                                    Montant
+
+                                </label>
+
+                                <input type="number" step="0.01" name="montant"
+                                    value="<?= htmlspecialchars($montant) ?>" class="form-control form-control-lg"
+                                    placeholder="0.00" required>
+
+                            </div>
+
+
+                            <!-- DEVISE -->
+                            <div class="col-md-4 mb-3">
+
+                                <label class="form-label fw-semibold">
+
+                                    <i class="bi bi-cash"></i>
+                                    Devise
+
+                                </label>
+
+                                <select name="devise" class="form-select form-select-lg" required>
+
+                                    <option value="CDF" <?= $devise == 'CDF' ? 'selected' : '' ?>>
+
+                                        CDF
+
+                                    </option>
+
+                                    <option value="USD" <?= $devise == 'USD' ? 'selected' : '' ?>>
+
+                                        USD
+
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <!-- DATE -->
+                            <div class="col-md-4 mb-4">
+
+                                <label class="form-label fw-semibold">
+
+                                    <i class="bi bi-calendar-event"></i>
+                                    Date de la dépense
+
+                                </label>
+
+                                <input type="date" name="date" value="<?= $date ?>" class="form-control form-control-lg"
+                                    required>
+
+                            </div>
 
                         </div>
 
-                        <!-- BUTTON -->
-                        <button type="submit" name="save" class="btn btn-primary btn-lg w-100 shadow-sm">
 
-                            <i class="bi bi-check-circle"></i>
-                            Enregistrer
+                        <!-- BUTTONS -->
+                        <div class="d-flex gap-2">
 
-                        </button>
+                            <button type="submit" name="save" class="btn btn-primary btn-lg flex-fill shadow-sm">
 
-                        <!-- CANCEL / BACK -->
-                        <a href="index.php" class="btn btn-outline-secondary w-100 mt-2">
+                                <i class="bi bi-check-circle"></i>
+                                Enregistrer
 
-                            Retour
+                            </button>
 
-                        </a>
+
+                            <a href="index.php" class="btn btn-outline-secondary btn-lg">
+
+                                Retour
+
+                            </a>
+
+                        </div>
 
                     </form>
 
@@ -140,3 +304,5 @@ require_once '../../layouts/navbar_sidebar.php';
     </div>
 
 </div>
+
+<?php require_once '../../layouts/footer.php'; ?>

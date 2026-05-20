@@ -10,43 +10,82 @@ require_once '../../layouts/navbar_sidebar.php';
 
 <div class="d-flex">
 
-    
-
     <div class="container-fluid p-4">
 
-        <h3>Dépenses</h3>
+        <div class="d-flex justify-content-between align-items-center mb-3">
 
-        <a href="create_update_delete.php?action=create" class="btn btn-primary mb-3">
-            Ajouter
-        </a>
+            <h3 class="mb-0">
+                <i class="bi bi-cash-stack"></i>
+                Dépenses
+            </h3>
 
-        <table class="table table-bordered">
+            <a href="create_update_delete.php?action=create" class="btn btn-primary">
 
-            <tr>
-                <th>ID</th>
-                <th>Motif</th>
-                <th>Montant</th>
-                <th>Date dépenses</th>
-                <th>Actions</th>
-            </tr>
+                <i class="bi bi-plus-circle-fill"></i>
+                Ajouter
 
-            <?php foreach($depenses as $d): ?>
+            </a>
 
-            <tr>
-                <td><?= $d['id'] ?></td>
-                <td><?= $d['motif'] ?></td>
-                <td><?= $d['montant'] ?></td>
-                <td><?= $d['date_depense'] ?></td>
-                <td>
-                    <a href="view.php?id=<?= $d['id'] ?>" class="btn btn-info btn-sm">Voir</a>
-                    <a href="create_update_delete.php?action=edit&id=<?= $d['id'] ?>"
-                        class="btn btn-warning btn-sm">Edit</a>
-                    <a href="create_update_delete.php?action=delete&id=<?= $d['id'] ?>"
-                        class="btn btn-danger btn-sm">Del</a>
-                </td>
-            </tr>
+        </div>
 
-            <?php endforeach; ?>
+        <table class="table table-bordered table-hover align-middle">
+
+            <thead class="table-dark">
+
+                <tr>
+                    <th>ID</th>
+                    <th>Motif</th>
+                    <th>Montant</th>
+                    <th>Date dépenses</th>
+                    <th width="220"></th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <?php foreach($depenses as $d): ?>
+
+                <tr>
+                    <td><?= $d['id'] ?></td>
+                    <td><?= htmlspecialchars($d['motif']) ?></td>
+                    <td><?= $d['montant'] ?></td>
+                    <td><?= $d['date_depense'] ?></td>
+                    <td>
+
+                        <div class="d-flex gap-1 flex-wrap">
+
+                            <a href="view.php?id=<?= $d['id'] ?>" class="btn btn-primary btn-sm">
+
+                                <i class="bi bi-eye-fill"></i>
+                                <!-- Voir -->
+
+                            </a>
+
+                            <a href="create_update_delete.php?action=edit&id=<?= $d['id'] ?>"
+                                class="btn btn-warning btn-sm">
+
+                                <i class="bi bi-pencil-square"></i>
+                                <!-- Edit -->
+
+                            </a>
+
+                            <a href="create_update_delete.php?action=delete&id=<?= $d['id'] ?>"
+                                class="btn btn-danger btn-sm" onclick="return confirm('Supprimer cette dépense ?')">
+
+                                <i class="bi bi-trash-fill"></i>
+                                <!-- Del -->
+
+                            </a>
+
+                        </div>
+
+                    </td>
+                </tr>
+
+                <?php endforeach; ?>
+
+            </tbody>
 
         </table>
 

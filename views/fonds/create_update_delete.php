@@ -4,11 +4,12 @@ require_once '../../core/auth.php';
 require_once '../../config/database.php';
 
 $action = $_GET['action'] ?? '';
-$id = $_GET['id'] ?? 0;
+$id = (int)($_GET['id'] ?? 0);
 
 $montant = '';
 $motif = '';
 $campagne = '';
+$devise = 'CDF';
 
 
 // =====================
@@ -21,9 +22,12 @@ if($action == 'edit'){
 
     $f = $stmt->fetch();
 
-    $montant = $f['montant'];
-    $motif = $f['motif'];
-    $campagne = $f['campagne'];
+    if($f){
+        $montant = $f['montant'];
+        $motif = $f['motif'];
+        $campagne = $f['campagne'];
+        $devise = $f['devise'] ?? 'CDF';
+    }
 }
 
 
@@ -34,25 +38,27 @@ if(isset($_POST['save'])){
 
     if($action == 'create'){
 
-        $sql = "INSERT INTO fonds(campagne,montant,motif)
-                VALUES(?,?,?)";
+        $sql = "INSERT INTO fonds(campagne,montant,motif,devise)
+                VALUES(?,?,?,?)";
 
         $pdo->prepare($sql)->execute([
             $_POST['campagne'],
             $_POST['montant'],
-            $_POST['motif']
+            $_POST['motif'],
+            $_POST['devise']
         ]);
 
     }else{
 
         $sql = "UPDATE fonds
-                SET campagne=?, montant=?, motif=?
+                SET campagne=?, montant=?, motif=?, devise=?
                 WHERE id=?";
 
         $pdo->prepare($sql)->execute([
             $_POST['campagne'],
             $_POST['montant'],
             $_POST['motif'],
+            $_POST['devise'],
             $id
         ]);
     }
@@ -85,27 +91,59 @@ require_once '../../layouts/navbar_sidebar.php';
     <form method="POST" class="card p-3 shadow-sm">
 
         <!-- CAMPAGNE -->
-        <label>Campagne / Projet</label>
-
+        <label class="form-label mb-3">Campagne / Projet</label>
         <input class="form-control mb-2" name="campagne" placeholder="Ex: Achat parcelle, Construction église..."
-            value="<?= $campagne ?>" required>
+            value="<?= htmlspecialchars($campagne) ?>" required>
 
         <!-- MOTIF -->
-        <label>Motif (optionnel)</label>
-
+        <label class="form-label mb-3">Motif (optionnel)</label>
         <textarea class="form-control mb-2" name="motif"
-            placeholder="Détail de la contribution"><?= $motif ?></textarea>
+            placeholder="Détail de la contribution"><?= htmlspecialchars($motif) ?></textarea>
 
-        <!-- MONTANT -->
-        <label>Montant (Séparer les montant par des virgules)</label>
+        <div class="row">
 
-        <input class="form-control mb-3" name="montant" type="text" placeholder="Ex: 10, 50, 100..."
-            value="<?= $montant ?>" required>
+            <!-- MONTANT -->
+            <div class="col-md-6 mb-3">
 
-        <button class="btn btn-primary" name="save">
-            💾 Enregistrer contribution
-        </button>
+                <label class="form-label mb-3">Montant (Séparer les montants par des virgules)</label>
+
+                <input type="text" class="form-control" name="montant" value="<?= htmlspecialchars($montant) ?>"
+                    placeholder="Ex: 10, 50, 100..." required>
+
+            </div>
+
+            <!-- DEVISE -->
+            <div class="col-md-6 mb-3">
+
+                <label class="form-label mb-3">Devise</label>
+
+                <select name="devise" class="form-select" required>
+
+                    <option value="CDF" <?= $devise=='CDF'?'selected':'' ?>>
+                        CDF
+                    </option>
+
+                    <option value="USD" <?= $devise=='USD'?'selected':'' ?>>
+                        USD
+                    </option>
+
+                </select>
+
+            </div>
+
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary" name="save">
+                <i class="bi bi-check-circle-fill"></i> Enregistrer contribution
+            </button>
+            <a href="../fonds/" class="btn btn-secondary">
+                Retour
+            </a>
+        </div>
+
 
     </form>
 
 </div>
+
+<?php require_once '../../layouts/footer.php'; ?>
