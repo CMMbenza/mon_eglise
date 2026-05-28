@@ -2,9 +2,9 @@
 <?php
 
 $host = 'localhost';
-$dbname = 'yebananotechgrou_mon_eglise';
-$username = 'yebananotechgrou_mon_eglise';
-$password = 'a%GFtQbFYqd4ixjg';
+$dbname = 'eglise_db';
+$username = 'root';
+$password = '';
 
 try {
 

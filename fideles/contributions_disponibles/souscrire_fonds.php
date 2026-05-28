@@ -23,6 +23,30 @@ $fonds = $pdo->query("
 
 
 // =======================================
+// FONDS SELECTIONNE
+// =======================================
+
+$selected_fonds_id = isset($_GET['fonds'])
+    ? (int) $_GET['fonds']
+    : 0;
+
+$fonds_selected = null;
+
+if ($selected_fonds_id > 0) {
+
+    $stmt = $pdo->prepare("
+        SELECT *
+        FROM fonds
+        WHERE id = ?
+    ");
+
+    $stmt->execute([$selected_fonds_id]);
+
+    $fonds_selected = $stmt->fetch();
+}
+
+
+// =======================================
 // ENREGISTREMENT
 // =======================================
 
@@ -41,6 +65,27 @@ if(isset($_POST['submit'])){
 
     }else{
 
+        // =======================================
+        // RECUPERATION DEVISE DU FONDS
+        // =======================================
+
+        $stmtFonds = $pdo->prepare("
+            SELECT devise
+            FROM fonds
+            WHERE id = ?
+        ");
+
+        $stmtFonds->execute([$fonds_id]);
+
+        $fonds_data = $stmtFonds->fetch();
+
+        $devise = $fonds_data['devise'] ?? 'CDF';
+
+
+        // =======================================
+        // INSERTION
+        // =======================================
+
         $sql = "
             INSERT INTO engagements_fonds
             (
@@ -50,9 +95,10 @@ if(isset($_POST['submit'])){
                 periode,
                 description_periode,
                 date_debut,
-                date_fin
+                date_fin,
+                devise
             )
-            VALUES(?,?,?,?,?,?,?)
+            VALUES(?,?,?,?,?,?,?,?)
         ";
 
         $stmt = $pdo->prepare($sql);
@@ -64,7 +110,8 @@ if(isset($_POST['submit'])){
             $periode,
             $description_periode,
             $date_debut,
-            $date_fin
+            $date_fin,
+            $devise
         ]);
 
         $_SESSION['success'] = "Votre engagement a été enregistré avec succès.";
@@ -77,6 +124,8 @@ if(isset($_POST['submit'])){
 require_once '../../layouts/header.php';
 require_once '../../layouts/navbar_sidebar_fideles.php';
 ?>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
 <div class="container-fluid p-4">
 
@@ -130,6 +179,28 @@ require_once '../../layouts/navbar_sidebar_fideles.php';
 
         <div class="card-body">
 
+            <?php if($fonds_selected): ?>
+
+            <div class="alert alert-info">
+
+                <strong>Campagne :</strong>
+                <?= htmlspecialchars($fonds_selected['campagne']) ?>
+
+                <br>
+
+                <strong>Objectif :</strong>
+                <?= htmlspecialchars($fonds_selected['montant'],2) ?>
+                <?= htmlspecialchars($fonds_selected['devise']) ?>
+
+                <br>
+
+                <strong>Description :</strong>
+                <?= nl2br(htmlspecialchars($fonds_selected['motif'])) ?>
+
+            </div>
+
+            <?php endif; ?>
+
             <form method="POST">
 
                 <div class="row">
@@ -141,28 +212,26 @@ require_once '../../layouts/navbar_sidebar_fideles.php';
                             Fonds / Campagne
                         </label>
 
-                        <select name="fonds_id" class="form-select" required>
+                        <select class="form-select" disabled>
 
-                            <option value="">
-                                Choisir un fonds
+                            <option>
+                                <?php
+                                foreach($fonds as $f){
+                                    if($selected_fonds_id == $f['id']){
+                                        echo htmlspecialchars($f['campagne']) . ' — ' .
+                                            number_format($f['montant'],2) . ' ' .
+                                            $f['devise'];
+                                    }
+                                }
+                            ?>
                             </option>
-
-                            <?php foreach($fonds as $f): ?>
-
-                            <option value="<?= $f['id'] ?>">
-
-                                <?= htmlspecialchars($f['campagne']) ?>
-
-                                — <?= htmlspecialchars($f['montant'],2) ?> $
-
-                            </option>
-
-                            <?php endforeach; ?>
 
                         </select>
 
-                    </div>
+                        <!-- on garde la valeur pour POST -->
+                        <input type="hidden" name="fonds_id" value="<?= $selected_fonds_id ?>">
 
+                    </div>
 
                     <!-- MONTANT -->
                     <div class="col-md-6 mb-3">
@@ -171,13 +240,22 @@ require_once '../../layouts/navbar_sidebar_fideles.php';
                             Montant engagé
                         </label>
 
-                        <input type="number" step="0.01" name="montant_engage" class="form-control" placeholder="0.00"
-                            required>
+                        <div class="input-group">
+
+                            <input type="number" step="0.01" name="montant_engage" class="form-control"
+                                placeholder="0.00" required>
+
+                            <span class="input-group-text">
+
+                                <?= htmlspecialchars($fonds_selected['devise'] ?? 'DEV') ?>
+
+                            </span>
+
+                        </div>
 
                     </div>
 
                 </div>
-
 
                 <div class="row">
 

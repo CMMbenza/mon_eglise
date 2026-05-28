@@ -32,49 +32,91 @@ $total_cultes = $pdo->query("
     FROM cultes
 ")->fetchColumn();
 
-// $total_offrande = $pdo->query("
-//     SELECT SUM(offrande)
-//     FROM cultes
-// ")->fetchColumn() ?? 0;
-
-// $total_dime = $pdo->query("
-//     SELECT SUM(dime)
-//     FROM cultes
-// ")->fetchColumn() ?? 0;
-
-$total_sociale = $pdo->query("
-    SELECT SUM(sociale)
+$total_cultes_usd = $pdo->query("
+    SELECT COALESCE(SUM(offrande_dime + sociale + autres),0)
     FROM cultes
-")->fetchColumn() ?? 0;
+    WHERE devise = 'USD'
+")->fetchColumn();
 
-$total_autres = $pdo->query("
-    SELECT SUM(autres)
+$total_cultes_cdf = $pdo->query("
+    SELECT COALESCE(SUM(offrande_dime + sociale + autres),0)
     FROM cultes
-")->fetchColumn() ?? 0;
+    WHERE devise = 'CDF'
+")->fetchColumn();
 
-$total_depenses = $pdo->query("
-    SELECT SUM(montant)
+$total_sociale_usd = $pdo->query("
+    SELECT COALESCE(SUM(sociale),0)
+    FROM cultes
+    WHERE devise = 'USD'
+")->fetchColumn();
+
+$total_sociale_cdf = $pdo->query("
+    SELECT COALESCE(SUM(sociale),0)
+    FROM cultes
+    WHERE devise = 'CDF'
+")->fetchColumn();
+
+$total_autres_usd = $pdo->query("
+    SELECT COALESCE(SUM(autres),0)
+    FROM cultes
+    WHERE devise = 'USD'
+")->fetchColumn();
+
+$total_autres_cdf = $pdo->query("
+    SELECT COALESCE(SUM(autres),0)
+    FROM cultes
+    WHERE devise = 'CDF'
+")->fetchColumn();
+
+$total_depenses_usd = $pdo->query("
+    SELECT COALESCE(SUM(montant),0)
     FROM depenses
-")->fetchColumn() ?? 0;
+    WHERE devise = 'USD'
+")->fetchColumn();
 
-$total_fonds = $pdo->query("
-    SELECT SUM(CAST(montant AS DECIMAL(10,2)))
+$total_depenses_cdf = $pdo->query("
+    SELECT COALESCE(SUM(montant),0)
+    FROM depenses
+    WHERE devise = 'CDF'
+")->fetchColumn();
+
+$total_fonds_usd = $pdo->query("
+    SELECT COALESCE(SUM(CAST(montant AS DECIMAL(10,2))),0)
     FROM fonds
-")->fetchColumn() ?? 0;
+    WHERE devise = 'USD'
+")->fetchColumn();
 
+$total_fonds_cdf = $pdo->query("
+    SELECT COALESCE(SUM(CAST(montant AS DECIMAL(10,2))),0)
+    FROM fonds
+    WHERE devise = 'CDF'
+")->fetchColumn();
+
+function sumByDevise($pdo, $table, $column, $devise)
+{
+    $stmt = $pdo->prepare("
+        SELECT COALESCE(SUM($column),0)
+        FROM $table
+        WHERE devise = ?
+    ");
+    $stmt->execute([$devise]);
+    return $stmt->fetchColumn();
+}
 
 // ======================================
 // CALCULS
 // ======================================
 
-$total_entrees =
-    $total_offrande
-    + $total_dime
-    + $total_sociale
-    + $total_autres
-    + $total_fonds;
+$total_entrees_usd =
+    $total_cultes_usd +
+    $total_fonds_usd;
 
-$solde = $total_entrees - $total_depenses;
+$total_entrees_cdf =
+    $total_cultes_cdf +
+    $total_fonds_cdf;
+
+$solde_usd = $total_entrees_usd - $total_depenses_usd;
+$solde_cdf = $total_entrees_cdf - $total_depenses_cdf;
 
 
 // ======================================
@@ -328,9 +370,10 @@ body {
                                     Total entrées
                                 </div>
 
-                                <div class="card-number text-success">
+                                <div class="card-number text-success" style="font-size: 18px;">
 
-                                    <?= number_format($total_entrees,2) ?> $
+                                    <?= number_format($total_entrees_usd,2) ?> $ <br>
+                                    <?= number_format($total_entrees_cdf,2) ?> CDF
 
                                 </div>
 
@@ -374,10 +417,10 @@ body {
                                     Solde global
                                 </div>
 
-                                <div class="card-number <?= $solde >= 0 ? 'text-primary' : 'text-danger' ?>">
-
-                                    <?= number_format($solde,2) ?> $
-
+                                <div class="card-number <?= $solde >= 0 ? 'text-primary' : 'text-danger' ?>"
+                                    style="font-size: 18px;">
+                                    <?= number_format($solde_usd,2) ?> $ <br>
+                                    <?= number_format($solde_cdf,2) ?> CDF
                                 </div>
 
                             </div>
@@ -432,11 +475,14 @@ body {
 
                             <i class="bi bi-wallet2 fs-2 text-success"></i>
 
-                            <h6 class="mt-2">Offrandes</h6>
+                            <h6 class="mt-2">Offrandes + Dîmes</h6>
 
                             <h5 class="text-success">
 
-                                <?= number_format($total_offrande,2) ?> $
+                                <?= number_format($total_cultes_usd,2) ?> USD
+                                <br>
+
+                                <?= number_format($total_cultes_cdf,2) ?> CDF
 
                             </h5>
 
@@ -444,7 +490,7 @@ body {
 
                     </div>
 
-                    <div class="col-md-4 col-lg-2">
+                    <div class="d-none col-md-4 col-lg-2">
 
                         <div class="stat-mini text-center">
 
@@ -454,7 +500,7 @@ body {
 
                             <h5 class="text-primary">
 
-                                <?= number_format($total_dime,2) ?> $
+                                <?= number_format($total_dime,2) ?> USD
 
                             </h5>
 
@@ -472,7 +518,10 @@ body {
 
                             <h5 class="text-warning">
 
-                                <?= number_format($total_sociale,2) ?> $
+                                <?= number_format($total_sociale_usd,2) ?> USD
+                                <br>
+
+                                <?= number_format($total_sociale_cdf,2) ?> CDF
 
                             </h5>
 
@@ -490,7 +539,10 @@ body {
 
                             <h5>
 
-                                <?= number_format($total_autres,2) ?> $
+                                <?= number_format($total_autres_usd,2) ?> USD
+                                <br>
+
+                                <?= number_format($total_autres_cdf,2) ?> CDF
 
                             </h5>
 
@@ -508,7 +560,10 @@ body {
 
                             <h5 class="text-info">
 
-                                <?= number_format($total_fonds,2) ?> $
+                                <?= number_format($total_fonds_usd,2) ?> USD
+                                <br>
+
+                                <?= number_format($total_fonds_cdf,2) ?> CDF
 
                             </h5>
 
@@ -516,9 +571,9 @@ body {
 
                     </div>
 
-                    <div class="col-md-4 col-lg-2">
+                    <div class="col-md-4 col-lg-4 h-100" style="heigth: 100% auto">
 
-                        <div class="stat-mini text-center">
+                        <div class="stat-mini text-left">
 
                             <i class="bi bi-credit-card-2-front-fill fs-2 text-danger"></i>
 
@@ -526,7 +581,9 @@ body {
 
                             <h5 class="text-danger">
 
-                                <?= number_format($total_depenses,2) ?> $
+                                <?= number_format($total_depenses_usd,2) ?> USD
+                                -
+                                <?= number_format($total_depenses_cdf,2) ?> CDF
 
                             </h5>
 
@@ -568,8 +625,8 @@ body {
                             <th>Thème</th>
                             <th>Orateur</th>
                             <th>Participants</th>
-                            <th>Offrande</th>
-                            <th>Dîme</th>
+                            <th>Offrande + Dîme</th>
+                            <!-- <th>Dîme</th> -->
                             <th>Sociale</th>
                             <th>Autres</th>
 
@@ -601,25 +658,19 @@ body {
 
                             <td class="text-success">
 
-                                <?= number_format($c['offrande'],2) ?> $
+                                <?= number_format($c['offrande_dime'],2) ?> <?= $c['devise'] ?>
 
                             </td>
 
                             <td>
 
-                                <?= number_format($c['dime'],2) ?> $
+                                <?= number_format($c['sociale'],2) ?> <?= $c['devise'] ?>
 
                             </td>
 
                             <td>
 
-                                <?= number_format($c['sociale'],2) ?> $
-
-                            </td>
-
-                            <td>
-
-                                <?= number_format($c['autres'],2) ?> $
+                                <?= number_format($c['autres'],2) ?> <?= $c['devise'] ?>
 
                             </td>
 
@@ -682,7 +733,7 @@ body {
 
                             <td class="text-danger fw-bold">
 
-                                <?= number_format($d['montant'],2) ?> $
+                                <?= number_format($d['montant'],2) ?> <?= $d['devise'] ?>
 
                             </td>
 
