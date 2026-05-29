@@ -2,9 +2,9 @@
 <?php
 
 $host = 'localhost';
-$dbname = 'eglise_db';
-$username = 'root';
-$password = '';
+$dbname = 'egliselystaberna_data';
+$username = 'egliselystaberna_user';
+$password = ']8H(ZHJ907CS0ijo';
 
 try {
 
