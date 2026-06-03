@@ -1,3 +1,15 @@
+<?php
+$base_url = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
+
+if (strpos($base_url, '/fideles') !== false) {
+    $base_url = substr($base_url, 0, strpos($base_url, '/fideles'));
+}
+
+if ($base_url === '') {
+    $base_url = '';
+}
+?>
+
 <!-- MENU / NAVBAR -->
 <div class="bg-dark text-white px-3 py-2 d-flex align-items-center justify-content-between flex-wrap">
 
@@ -13,7 +25,7 @@
         </button>
 
         <!-- Logo -->
-        <a href="/mon-eglise/fideles/dashboard.php" class="text-white text-decoration-none fw-bold fs-5 me-4">
+        <a href="<?= $base_url ?>/fideles/dashboard.php" class="text-white text-decoration-none fw-bold fs-5 me-4">
 
             <i class="bi bi-building"></i> Gestion Église
 
@@ -23,35 +35,35 @@
         <ul class="nav d-none d-lg-flex">
 
             <li class="nav-item">
-                <a href="/mon-eglise/fideles/dashboard.php" class="nav-link text-white">
+                <a href="<?= $base_url ?>/fideles/dashboard.php" class="nav-link text-white">
                     <i class="bi bi-speedometer2"></i>
                     Dashboard
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="/mon-eglise/fideles/engagement_est_mes_paiements" class="nav-link text-white">
+                <a href="<?= $base_url ?>/fideles/engagement_est_mes_paiements" class="nav-link text-white">
                     <i class="bi bi-people"></i>
                     Mes engagements & paiements
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="/mon-eglise/fideles/cultes/" class="nav-link text-white">
+                <a href="<?= $base_url ?>/fideles/cultes/" class="nav-link text-white">
                     <i class="bi bi-book"></i>
                     Cultes
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="/mon-eglise/fideles/contributions_disponibles/" class="nav-link text-white">
+                <a href="<?= $base_url ?>/fideles/contributions_disponibles/" class="nav-link text-white">
                     <i class="bi bi-wallet2"></i>
                     Contributions
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="/mon-eglise/fideles/annonces/" class="nav-link text-white">
+                <a href="<?= $base_url ?>/fideles/annonces/" class="nav-link text-white">
                     <i class="bi bi-megaphone"></i>
                     Annonces
                 </a>
@@ -78,7 +90,7 @@
                 </h6>
             </li>
             <li class="nav-item">
-                <a class="dropdown-item" href="/mon-eglise/fideles/my_account/">
+                <a class="dropdown-item" href="<?= $base_url ?>/fideles/my_account/">
                     <i class="bi bi-bar-chart"></i>
                     Mon compte
                 </a>
@@ -88,7 +100,7 @@
             </li>
 
             <li>
-                <a class="dropdown-item text-danger" href="/mon-eglise/core/logout.php">
+                <a class="dropdown-item text-danger" href="<?= $base_url ?>/core/logout.php">
 
                     <i class="bi bi-box-arrow-right"></i>
                     Déconnexion
