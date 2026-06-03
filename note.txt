@@ -1,0 +1,59 @@
+-- =========================================
+-- CULTES
+-- =========================================
+
+ALTER TABLE cultes
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- DEPENSES
+-- =========================================
+
+ALTER TABLE depenses
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- FONDS
+-- =========================================
+
+ALTER TABLE fonds
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- ENGAGEMENTS FONDS
+-- =========================================
+
+ALTER TABLE engagements_fonds
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+
+-- =========================================
+-- VERSEMENTS FONDS
+-- =========================================
+
+ALTER TABLE versements_fonds
+ADD COLUMN devise ENUM('CDF','USD') NOT NULL DEFAULT 'USD';
+
+#20-05
+CREATE TABLE comptes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE compte_mouvements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    compte_id INT NOT NULL,
+    fidele_id INT NULL,
+    type ENUM('ENTREE','SORTIE') NOT NULL DEFAULT 'ENTREE',
+    montant DECIMAL(10,2) NOT NULL,
+    devise ENUM('CDF','USD') NOT NULL DEFAULT 'CDF',
+    date_mouvement DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (compte_id) REFERENCES comptes(id) ON DELETE CASCADE,
+    FOREIGN KEY (fidele_id) REFERENCES fideles(id) ON DELETE SET NULL
+);

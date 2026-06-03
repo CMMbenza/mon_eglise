@@ -43,18 +43,40 @@
                 </a>
             </li>
 
-            <li class="nav-item">
-                <a href="/mon-eglise/views/depenses/" class="nav-link text-white">
-                    <i class="bi bi-cash-stack"></i>
-                    Dépenses
-                </a>
-            </li>
+            <li class="nav-item dropdown">
 
-            <li class="nav-item">
-                <a href="/mon-eglise/views/fonds/" class="nav-link text-white">
-                    <i class="bi bi-wallet2"></i>
-                    Contributions
+                <a class="nav-link text-white dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+
+                    <i class="bi bi-folder2-open"></i>
+                    Finances
                 </a>
+
+                <ul class="dropdown-menu dropdown-menu-dark">
+
+                    <li>
+                        <a class="dropdown-item" href="/mon-eglise/views/depenses/">
+                            <i class="bi bi-cash-stack"></i>
+                            Dépenses
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" href="/mon-eglise/views/fonds/">
+                            <i class="bi bi-wallet2"></i>
+                            Contributions
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="dropdown-item" href="/mon-eglise/views/comptes/">
+                            <i class="bi bi-bank2"></i>
+                            Gestion des comptes
+                        </a>
+                    </li>
+
+                </ul>
+
             </li>
 
             <li class="nav-item">

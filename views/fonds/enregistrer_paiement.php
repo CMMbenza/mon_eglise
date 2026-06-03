@@ -25,6 +25,8 @@ if(!$fonds){
     die("Fonds introuvable");
 }
 
+$devise = $fonds['devise'] ?? 'CDF';
+
 
 // ======================================
 // ENGAGEMENTS ACTIFS UNIQUEMENT
@@ -79,7 +81,7 @@ if(isset($_POST['save'])){
         $reste = $eng['montant_engage'] - $total_paye;
 
         if($montant > $reste){
-            throw new Exception("Montant supérieur au reste ($reste $)");
+            throw new Exception("Montant supérieur au reste ($reste $devise)");
         }
 
         // 3. INSERT paiement
@@ -88,15 +90,17 @@ if(isset($_POST['save'])){
                 engagement_id,
                 montant,
                 commentaire,
-                date_versement
+                date_versement,
+                devise
             )
-            VALUES(?,?,?,?)
+            VALUES(?,?,?,?,?)
         ");
         $stmt->execute([
             $engagement_id,
             $montant,
             $commentaire,
-            $date_versement
+            $date_versement,
+            $devise
         ]);
 
         $success = "Paiement enregistré.";
@@ -114,7 +118,7 @@ if(isset($_POST['save'])){
 
         if($reste_final <= 0){
 
-            // on clôture cycle actuel
+            // clôture cycle actuel
             $stmt = $pdo->prepare("
                 UPDATE engagements_fonds
                 SET cycle_actif = 0
@@ -122,7 +126,7 @@ if(isset($_POST['save'])){
             ");
             $stmt->execute([$engagement_id]);
 
-            // créer nouveau cycle
+            // nouveau cycle
             $stmt = $pdo->prepare("
                 INSERT INTO engagements_fonds(
                     user_id,
@@ -132,9 +136,10 @@ if(isset($_POST['save'])){
                     description_periode,
                     cycle_actif,
                     cycle_num,
-                    date_debut
+                    date_debut,
+                    devise
                 )
-                VALUES(?,?,?,?,?,?,?,NOW())
+                VALUES(?,?,?,?,?,?,?,?,?)
             ");
 
             $stmt->execute([
@@ -144,7 +149,9 @@ if(isset($_POST['save'])){
                 $eng['periode'],
                 'Renouvellement automatique',
                 1,
-                ($eng['cycle_num'] + 1)
+                ($eng['cycle_num'] + 1),
+                date('Y-m-d'),
+                $devise
             ]);
         }
 
@@ -172,18 +179,17 @@ require_once '../../layouts/navbar_sidebar.php';
                 <div class="card-body p-4">
 
                     <?php if($success): ?>
-                        <div class="alert alert-success"><?= $success ?></div>
+                    <div class="alert alert-success"><?= $success ?></div>
                     <?php endif; ?>
 
                     <?php if($error): ?>
-                        <div class="alert alert-danger"><?= $error ?></div>
+                    <div class="alert alert-danger"><?= $error ?></div>
                     <?php endif; ?>
 
                     <div class="mb-4">
                         <label class="form-label fw-bold">Fonds</label>
                         <input type="text" class="form-control"
-                               value="<?= htmlspecialchars($fonds['campagne']) ?>"
-                               readonly>
+                            value="<?= htmlspecialchars($fonds['campagne']) ?>" readonly>
                     </div>
 
                     <form method="POST">
@@ -198,7 +204,7 @@ require_once '../../layouts/navbar_sidebar.php';
 
                                 <?php foreach($engagements as $e): ?>
 
-                                    <?php
+                                <?php
                                     $stmt = $pdo->prepare("
                                         SELECT COALESCE(SUM(montant),0)
                                         FROM versements_fonds
@@ -209,10 +215,10 @@ require_once '../../layouts/navbar_sidebar.php';
                                     $reste = $e['montant_engage'] - $paye;
                                     ?>
 
-                                    <option value="<?= $e['id'] ?>">
-                                        <?= htmlspecialchars($e['nom'].' '.$e['prenom']) ?>
-                                        - reste: <?= number_format($reste,2) ?> $
-                                    </option>
+                                <option value="<?= $e['id'] ?>">
+                                    <?= htmlspecialchars($e['nom'].' '.$e['prenom']) ?>
+                                    - reste: <?= number_format($reste,2) ?> <?= $devise ?>
+                                </option>
 
                                 <?php endforeach; ?>
 
@@ -221,15 +227,14 @@ require_once '../../layouts/navbar_sidebar.php';
                         </div>
 
                         <div class="mb-3">
-                            <label>Montant</label>
+                            <label>Montant <?= $devise ?></label>
                             <input type="number" step="0.01" name="montant" class="form-control" required>
                         </div>
 
                         <div class="mb-3">
                             <label>Date</label>
-                            <input type="date" name="date_versement"
-                                   class="form-control"
-                                   value="<?= date('Y-m-d') ?>" required>
+                            <input type="date" name="date_versement" class="form-control" value="<?= date('Y-m-d') ?>"
+                                required>
                         </div>
 
                         <div class="mb-3">

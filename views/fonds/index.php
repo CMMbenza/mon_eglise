@@ -12,17 +12,12 @@ $fonds = $pdo->query("
     SELECT
         f.*,
         COUNT(DISTINCT ef.user_id) AS total_souscriptions
-
     FROM fonds f
-
     LEFT JOIN engagements_fonds ef
         ON ef.fonds_id = f.id
-
     GROUP BY f.id
-
     ORDER BY f.id DESC
 ");
-
 
 require_once '../../layouts/header.php';
 require_once '../../layouts/navbar_sidebar.php';
@@ -52,15 +47,11 @@ require_once '../../layouts/navbar_sidebar.php';
             <div>
 
                 <h3 class="fw-bold mb-1">
-
                     Contributions / Fonds
-
                 </h3>
 
                 <p class="text-muted mb-0">
-
                     Gestion des fonds et souscriptions des fidèles
-
                 </p>
 
             </div>
@@ -85,14 +76,13 @@ require_once '../../layouts/navbar_sidebar.php';
                     <thead class="table-dark">
 
                         <tr>
-
                             <th>ID</th>
                             <th>Titre</th>
                             <th>Description</th>
                             <th>Montant</th>
+                            <!-- <th>Devise</th> -->
                             <th>Souscriptions</th>
                             <th></th>
-
                         </tr>
 
                     </thead>
@@ -105,81 +95,62 @@ require_once '../../layouts/navbar_sidebar.php';
 
                             <td>
                                 <a href="view.php?id=<?= $f['id'] ?>" class="btn btn-primary btn-sm">
-
                                     <?= $f['id'] ?>
-
                                 </a>
-
-
                             </td>
 
                             <td>
-
                                 <strong>
-
                                     <?= htmlspecialchars($f['campagne']) ?>
-
                                 </strong>
-
                             </td>
 
                             <td>
-
                                 <?= htmlspecialchars($f['motif']) ?>
-
                             </td>
 
-                            <td class="fw-bold text-success">
-
-                                <?= htmlspecialchars($f['montant'],2) ?> $
-
+                            <!-- MONTANT + DEVise corrigé -->
+                            <td class="fw-bold text-primary">
+                                <?= htmlspecialchars($f['montant']) ?>
+                                <span class="badge bg-dark"> <?= htmlspecialchars($f['devise'] ?? 'CDF') ?></span>
                             </td>
+
+                            <!-- <td>
+                                <span class="badge bg-secondary">
+                                    <?= htmlspecialchars($f['devise'] ?? 'CDF') ?>
+                                </span>
+                            </td> -->
 
                             <td>
-
                                 <span class="badge bg-primary">
-
                                     <?= $f['total_souscriptions'] ?>
-
                                     souscription(s)
-
                                 </span>
-
                             </td>
 
                             <td class="d-flex gap-2">
 
-                                <a href="view.php?id=<?= $f['id'] ?>" class="btn btn-info btn-sm">
-
+                                <a href="view.php?id=<?= $f['id'] ?>" class="btn btn-primary btn-sm">
                                     <i class="bi bi-eye-fill"></i>
-
                                 </a>
 
                                 <a href="historique_paiements.php?id=<?= $f['id'] ?>" class="btn btn-success btn-sm">
-
                                     <i class="bi bi-clock-history"></i>
-
                                 </a>
 
                                 <a href="enregistrer_paiement.php?id=<?= $f['id'] ?>" class="btn btn-dark btn-sm">
-
                                     <i class="bi bi-cash-coin"></i>
-
                                 </a>
 
                                 <a href="create_update_delete.php?action=edit&id=<?= $f['id'] ?>"
                                     class="btn btn-warning btn-sm">
-
                                     <i class="bi bi-pencil-fill"></i>
-
                                 </a>
 
                                 <a href="create_update_delete.php?action=delete&id=<?= $f['id'] ?>"
                                     class="btn btn-danger btn-sm"
                                     onclick="return confirm('Supprimer cette contribution ?')">
-
                                     <i class="bi bi-trash-fill"></i>
-
                                 </a>
 
                             </td>

@@ -15,9 +15,7 @@ $stmt = $pdo->prepare("
     FROM fonds
     WHERE id = ?
 ");
-
 $stmt->execute([$id]);
-
 $f = $stmt->fetch();
 
 if(!$f){
@@ -26,19 +24,19 @@ if(!$f){
     exit;
 }
 
+$devise = $f['devise'];
+
 
 // ======================================
 // NOMBRE SOUSCRIPTIONS
 // ======================================
 
 $stmtSouscriptions = $pdo->prepare("
-    SELECT COUNT(DISTINCT ef.user_id) AS nbre_souscriptions
+    SELECT COUNT(DISTINCT ef.user_id)
     FROM engagements_fonds ef
     WHERE fonds_id = ?
 ");
-
 $stmtSouscriptions->execute([$id]);
-
 $nbre_souscriptions = $stmtSouscriptions->fetchColumn();
 
 
@@ -51,9 +49,7 @@ $stmtMontant = $pdo->prepare("
     FROM engagements_fonds
     WHERE fonds_id = ?
 ");
-
 $stmtMontant->execute([$id]);
-
 $total_engage = $stmtMontant->fetchColumn() ?? 0;
 
 
@@ -68,9 +64,7 @@ $stmtVersements = $pdo->prepare("
         ON ef.id = vf.engagement_id
     WHERE ef.fonds_id = ?
 ");
-
 $stmtVersements->execute([$id]);
-
 $total_verse = $stmtVersements->fetchColumn() ?? 0;
 
 
@@ -82,20 +76,38 @@ $reste = $total_engage - $total_verse;
 
 
 // ======================================
-// DERNIERS ENGAGEMENTS
+// VERSEMENTS MENSUELS
+// ======================================
+
+$stmtMensuel = $pdo->prepare("
+    SELECT
+        DATE_FORMAT(vf.date_versement, '%Y-%m') AS mois,
+        SUM(vf.montant) AS total_mois
+    FROM versements_fonds vf
+    INNER JOIN engagements_fonds ef
+        ON ef.id = vf.engagement_id
+    WHERE ef.fonds_id = ?
+    GROUP BY mois
+    ORDER BY mois DESC
+");
+
+$stmtMensuel->execute([$id]);
+$mensuel = $stmtMensuel->fetchAll();
+
+
+// ======================================
+// ENGAGEMENTS
 // ======================================
 
 $engagements = $pdo->prepare("
     SELECT ef.*, u.nom
-FROM engagements_fonds ef
-INNER JOIN users u
-    ON u.id = ef.user_id
-WHERE ef.fonds_id = ?
-GROUP BY ef.user_id
-ORDER BY ef.id DESC
-LIMIT 10
+    FROM engagements_fonds ef
+    INNER JOIN users u ON u.id = ef.user_id
+    WHERE ef.fonds_id = ?
+    GROUP BY ef.user_id
+    ORDER BY ef.id DESC
+    LIMIT 10
 ");
-
 $engagements->execute([$id]);
 
 
@@ -104,20 +116,14 @@ $engagements->execute([$id]);
 // ======================================
 
 $versements = $pdo->prepare("
-    SELECT
-        vf.*,
-        u.nom,
-        ef.montant_engage
+    SELECT vf.*, u.nom, ef.montant_engage
     FROM versements_fonds vf
-    INNER JOIN engagements_fonds ef
-        ON ef.id = vf.engagement_id
-    INNER JOIN users u
-        ON u.id = ef.user_id
+    INNER JOIN engagements_fonds ef ON ef.id = vf.engagement_id
+    INNER JOIN users u ON u.id = ef.user_id
     WHERE ef.fonds_id = ?
     ORDER BY vf.id DESC
     LIMIT 10
 ");
-
 $versements->execute([$id]);
 
 require_once '../../layouts/header.php';
@@ -221,7 +227,7 @@ require_once '../../layouts/navbar_sidebar.php';
                     </small>
 
                     <h4 class="text-success fw-bold mt-1">
-                        <?= htmlspecialchars($f['montant']) ?> $
+                        <?= htmlspecialchars($f['montant']) ?> <?= $f['devise'] ?>
                     </h4>
 
                 </div>
@@ -314,7 +320,7 @@ require_once '../../layouts/navbar_sidebar.php';
                             </small>
 
                             <h3 class="fw-bold text-primary mt-2">
-                                <?= number_format($total_engage,2) ?> $
+                                <?= number_format($total_engage,2) ?> <?= $f['devise'] ?>
                             </h3>
 
                         </div>
@@ -350,7 +356,7 @@ require_once '../../layouts/navbar_sidebar.php';
                             </small>
 
                             <h3 class="fw-bold text-success mt-2">
-                                <?= number_format($total_verse,2) ?> $
+                                <?= number_format($total_verse,2) ?> <?= $f['devise'] ?>
                             </h3>
 
                         </div>
@@ -386,7 +392,7 @@ require_once '../../layouts/navbar_sidebar.php';
                             </small>
 
                             <h3 class="fw-bold text-danger mt-2">
-                                <?= number_format($reste,2) ?> $
+                                <?= number_format($reste,2) ?> <?= $f['devise'] ?>
                             </h3>
 
                         </div>
@@ -409,7 +415,7 @@ require_once '../../layouts/navbar_sidebar.php';
 
 
     <!-- ENGAGEMENTS -->
-    <div class="card shadow-sm page-card mb-4">
+    <div class="card shadow-sm page-card mb-5">
 
         <div class="card-header bg-primary text-white py-3">
 
@@ -448,7 +454,7 @@ require_once '../../layouts/navbar_sidebar.php';
 
                         <td class="fw-bold text-primary">
 
-                            <?= number_format($e['montant_engage'],2) ?> $
+                            <?= number_format($e['montant_engage'],2) ?> <?= $f['devise'] ?>
 
                         </td>
 
@@ -504,7 +510,6 @@ require_once '../../layouts/navbar_sidebar.php';
 
     </div>
 
-
     <!-- VERSEMENTS -->
     <div class="card shadow-sm page-card mb-5">
 
@@ -545,13 +550,13 @@ require_once '../../layouts/navbar_sidebar.php';
 
                         <td>
 
-                            <?= htmlspecialchars($v['montant_engage']) ?> $
+                            <?= htmlspecialchars($v['montant_engage']) ?> <?= $f['devise'] ?>
 
                         </td>
 
                         <td class="fw-bold text-success">
 
-                            <?= htmlspecialchars($v['montant']) ?> $
+                            <?= htmlspecialchars($v['montant']) ?> <?= $f['devise'] ?>
 
                         </td>
 
@@ -567,6 +572,49 @@ require_once '../../layouts/navbar_sidebar.php';
 
                         </td>
 
+                    </tr>
+
+                    <?php endforeach; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE MENSUELLE -->
+    <div class="card shadow-sm page-card mb-5">
+
+        <div class="card-header bg-dark text-white py-3">
+            <i class="bi bi-bar-chart-line"></i>
+            Versements mensuels
+        </div>
+
+        <div class="card-body table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead>
+                    <tr>
+                        <th>Mois</th>
+                        <th>Total versé</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    <?php foreach($mensuel as $m): ?>
+
+                    <tr>
+                        <td>
+                            <?= $m['mois'] ?>
+                        </td>
+
+                        <td class="fw-bold text-success">
+                            <?= number_format($m['total_mois'],2) ?> <?= $devise ?>
+                        </td>
                     </tr>
 
                     <?php endforeach; ?>

@@ -7,6 +7,23 @@ $user_id = $_SESSION['user']['id'];
 
 $page_title = "Mon espace fidèle";
 
+// =====================================
+// FONCTION SOMME PAR DEVISE
+// =====================================
+
+function sommeDevise($pdo, $sql, $params = [])
+{
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+
+    $data = [];
+
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $data[$row['devise']] = $row['total'];
+    }
+
+    return $data;
+}
 
 // =====================================
 // INFOS FIDELE
@@ -89,15 +106,14 @@ $engagements->execute([$user_id]);
 // TOTAL ENGAGE
 // =====================================
 
-$total_engage = $pdo->prepare("
-    SELECT SUM(montant_engage)
+$total_engage = sommeDevise($pdo, "
+    SELECT
+        devise,
+        COALESCE(SUM(montant_engage),0) as total
     FROM engagements_fonds
     WHERE user_id = ?
-");
-
-$total_engage->execute([$user_id]);
-
-$total_engage = $total_engage->fetchColumn() ?? 0;
+    GROUP BY devise
+", [$user_id]);
 
 
 // =====================================
@@ -129,25 +145,54 @@ $paiements->execute([$user_id]);
 // TOTAL PAYE
 // =====================================
 
-$total_paye = $pdo->prepare("
-    SELECT SUM(vf.montant)
+$total_paye = sommeDevise($pdo, "
+    SELECT
+        vf.devise,
+        COALESCE(SUM(vf.montant),0) as total
     FROM versements_fonds vf
+
     INNER JOIN engagements_fonds ef
         ON ef.id = vf.engagement_id
+
     WHERE ef.user_id = ?
-");
 
-$total_paye->execute([$user_id]);
-
-$total_paye = $total_paye->fetchColumn() ?? 0;
+    GROUP BY vf.devise
+", [$user_id]);
 
 
 // =====================================
 // SOLDE RESTANT
 // =====================================
 
-$solde_restant = $total_engage - $total_paye;
+$solde_usd =
+    ($total_engage['USD'] ?? 0)
+    - ($total_paye['USD'] ?? 0);
 
+$solde_cdf =
+    ($total_engage['CDF'] ?? 0)
+    - ($total_paye['CDF'] ?? 0);
+
+    // =====================================
+// GESTION DES COMPTES
+// =====================================
+$compte_mouvements = $pdo->prepare("
+    SELECT
+        cm.*,
+        c.nom AS compte_nom
+    FROM compte_mouvements cm
+
+    LEFT JOIN comptes c
+        ON c.id = cm.compte_id
+
+    LEFT JOIN fideles f
+        ON f.id = cm.fidele_id
+
+    WHERE f.user_id = ?
+
+    ORDER BY cm.date_mouvement DESC
+");
+
+$compte_mouvements->execute([$user_id]);
 
 require_once '../layouts/header.php';
 require_once '../layouts/navbar_sidebar_fideles.php';
@@ -224,9 +269,13 @@ require_once '../layouts/navbar_sidebar_fideles.php';
                                 Total engagé
                             </small>
 
-                            <h3 class="mt-2 text-primary">
-                                <?= number_format($total_engage,2) ?> $
-                            </h3>
+                            <h5 class="mt-2 text-primary">
+                                <?= number_format($total_engage['USD'] ?? 0,2) ?> USD
+                            </h5>
+
+                            <h5 class="text-primary">
+                                <?= number_format($total_engage['CDF'] ?? 0,2) ?> CDF
+                            </h5>
 
                         </div>
 
@@ -260,9 +309,13 @@ require_once '../layouts/navbar_sidebar_fideles.php';
                                 Total payé
                             </small>
 
-                            <h3 class="mt-2 text-success">
-                                <?= number_format($total_paye,2) ?> $
-                            </h3>
+                            <h5 class="mt-2 text-success">
+                                <?= number_format($total_paye['USD'] ?? 0,2) ?> USD
+                            </h5>
+
+                            <h5 class="text-success">
+                                <?= number_format($total_paye['CDF'] ?? 0,2) ?> CDF
+                            </h5>
 
                         </div>
 
@@ -296,9 +349,13 @@ require_once '../layouts/navbar_sidebar_fideles.php';
                                 Solde restant
                             </small>
 
-                            <h3 class="mt-2 text-danger">
-                                <?= number_format($solde_restant,2) ?> $
-                            </h3>
+                            <h5 class="mt-2 text-danger">
+                                <?= number_format($solde_usd,2) ?> USD
+                            </h5>
+
+                            <h5 class="text-danger">
+                                <?= number_format($solde_cdf,2) ?> CDF
+                            </h5>
 
                         </div>
 
@@ -512,7 +569,8 @@ require_once '../layouts/navbar_sidebar_fideles.php';
 
                         <td>
 
-                            <?= htmlspecialchars($f['montant'],2) ?> $
+                            <?= htmlspecialchars($f['montant']) ?>
+                            <?= htmlspecialchars($f['devise']) ?>
 
                         </td>
 
@@ -571,7 +629,8 @@ require_once '../layouts/navbar_sidebar_fideles.php';
 
                         <td>
 
-                            <?= number_format($e['montant_engage'],2) ?> $
+                            <?= number_format($e['montant_engage'],2) ?>
+                            <?= htmlspecialchars($e['devise']) ?>
 
                         </td>
 
@@ -638,13 +697,15 @@ require_once '../layouts/navbar_sidebar_fideles.php';
 
                         <td>
 
-                            <?= number_format($p['montant_engage'],2) ?> $
+                            <?= number_format($p['montant_engage'],2) ?>
+                            <?= htmlspecialchars($p['devise']) ?>
 
                         </td>
 
                         <td class="text-success fw-bold">
 
-                            <?= number_format($p['montant'],2) ?> $
+                            <?= number_format($p['montant'],2) ?>
+                            <?= htmlspecialchars($p['devise']) ?>
 
                         </td>
 
@@ -666,6 +727,83 @@ require_once '../layouts/navbar_sidebar_fideles.php';
 
     </div>
 
+    <!-- ===================== -->
+    <!-- MOUVEMENTS COMPTE -->
+    <!-- ===================== -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header bg-secondary text-white">
+
+            <i class="bi bi-bank"></i>
+            Gestion des comptes
+
+        </div>
+
+        <div class="card-body table-responsive">
+
+            <table class="table table-hover align-middle">
+
+                <thead>
+
+                    <tr>
+                        <th>Date</th>
+                        <th>Compte</th>
+                        <!-- <th>Type</th> -->
+                        <th>Montant</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    <?php foreach($compte_mouvements as $cm): ?>
+
+                    <tr>
+
+                        <td>
+                            <?= $cm['date_mouvement'] ?>
+                        </td>
+
+                        <td>
+                            <?= htmlspecialchars($cm['compte_nom']) ?>
+                        </td>
+
+                        <!-- <td>
+
+                        <?php if($cm['TYPE'] == 'ENTREE'): ?>
+
+                        <span class="badge bg-success">
+                            Entrée
+                        </span>
+
+                        <?php else: ?>
+
+                        <span class="badge bg-danger">
+                            Sortie
+                        </span>
+
+                        <?php endif; ?>
+
+                    </td> -->
+
+                        <td class="fw-bold">
+
+                            <?= number_format($cm['montant'],2) ?>
+                            <?= htmlspecialchars($cm['devise']) ?>
+
+                        </td>
+
+                    </tr>
+
+                    <?php endforeach; ?>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
 </div>
 
 <?php require_once '../layouts/footer.php'; ?>

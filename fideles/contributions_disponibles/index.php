@@ -65,12 +65,12 @@ require_once '../../layouts/navbar_sidebar_fideles.php';
 
             </p>
         </div>
-<a href="souscrire_fonds.php" class="btn btn-primary">
+        <a href="souscrire_fonds.php" class="btn btn-primary">
 
-                <i class="bi bi-plus-circle-fill"></i>
-                Nouvel engagement
+            <i class="bi bi-plus-circle-fill"></i>
+            Nouvel engagement
 
-            </a>
+        </a>
     </div>
 
 
@@ -116,7 +116,8 @@ require_once '../../layouts/navbar_sidebar_fideles.php';
                         <span class="badge bg-primary">
 
                             Objectif :
-                            <?= htmlspecialchars($f['montant'],2) ?> $
+                            <?= htmlspecialchars($f['montant'],2) ?>
+                            <?= htmlspecialchars($f['devise']) ?>
 
                         </span>
 
