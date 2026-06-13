@@ -1,22 +1,23 @@
-
 <?php
 
-$host = 'localhost';
-$dbname = 'egliselystaberna_data';
-$username = 'egliselystaberna_user';
-$password = ']8H(ZHJ907CS0ijo';
+require_once __DIR__ . '/config.php';
 
 try {
 
     $pdo = new PDO(
-        "mysql:host=$host;dbname=$dbname;charset=utf8",
-        $username,
-        $password
+        "mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']};charset=utf8mb4",
+        $_ENV['DB_USER'],
+        $_ENV['DB_PASS'],
+        [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false
+        ]
     );
 
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
 
-} catch(PDOException $e) {
+    error_log($e->getMessage());
 
-    die('Erreur DB : ' . $e->getMessage());
+    die('Erreur de connexion à la base de données.');
 }

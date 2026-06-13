@@ -450,15 +450,17 @@ if(isset($_POST['submit'])){
 
                                     <label>Mot de passe *</label>
 
-                                    <input type="password" name="password" class="form-control"
+                                    <input type="password" id="password" name="password" class="form-control"
                                         placeholder="Minimum 4 caractères" required>
-
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="showPassword">
+                                        <label class="form-check-label" for="showPassword">
+                                            Afficher le mot de passe
+                                        </label>
+                                    </div>
                                 </div>
 
                             </div>
-
-
-
                             <!-- BUTTON -->
 
                             <button type="submit" name="submit" class="btn btn-primary btn-register w-100">
@@ -498,7 +500,17 @@ if(isset($_POST['submit'])){
     <!-- Bootstrap JS -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    document.getElementById('showPassword').addEventListener('change', function() {
+        const password = document.getElementById('password');
 
+        if (this.checked) {
+            password.type = 'text';
+        } else {
+            password.type = 'password';
+        }
+    });
+    </script>
 </body>
 
 </html>

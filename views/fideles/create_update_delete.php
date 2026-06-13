@@ -343,7 +343,8 @@ require_once '../../layouts/header.php';
 
                             <label>Nom d'utilisateur</label>
 
-                            <input type="texte" name="email" class="form-control" placeholder="Entrez le nom d'utilisateur">
+                            <input type="texte" name="email" class="form-control"
+                                placeholder="Entrez le nom d'utilisateur">
 
                         </div>
 
@@ -351,8 +352,14 @@ require_once '../../layouts/header.php';
 
                             <label>Mot de passe</label>
 
-                            <input type="password" name="mot_de_passe" class="form-control" placeholder="********">
-
+                            <input type="password" id="password" name="mot_de_passe" class="form-control"
+                                placeholder="********">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="showPassword">
+                                <label class="form-check-label" for="showPassword">
+                                    Afficher le mot de passe
+                                </label>
+                            </div>
                         </div>
 
                         <!-- <div class="col-md-4 mb-3">
@@ -412,5 +419,17 @@ require_once '../../layouts/header.php';
     </div>
 
 </div>
+
+<script>
+document.getElementById('showPassword').addEventListener('change', function() {
+    const password = document.getElementById('password');
+
+    if (this.checked) {
+        password.type = 'text';
+    } else {
+        password.type = 'password';
+    }
+});
+</script>
 
 <?php require_once '../../layouts/footer.php'; ?>
