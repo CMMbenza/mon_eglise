@@ -200,6 +200,30 @@ require_once '../../layouts/navbar_sidebar.php';
 
     </div>
 
+    <div class="d-flex flex-wrap gap-2 mt-3 mb-3">
+
+        <a href="souscrire_fidele.php?fonds_id=<?= $f['id'] ?>" class="btn btn-primary btn-sm">
+            <i class="bi bi-person-plus-fill"></i> Souscrire un fidèle
+        </a>
+
+        <a href="historique_paiements.php?id=<?= $f['id'] ?>" class="btn btn-success btn-sm">
+            <i class="bi bi-clock-history"></i> Historique
+        </a>
+
+        <a href="enregistrer_paiement.php?id=<?= $f['id'] ?>" class="btn btn-dark btn-sm">
+            <i class="bi bi-cash-coin"></i> Effectuer le Paiement
+        </a>
+
+        <a href="create_update_delete.php?action=edit&id=<?= $f['id'] ?>" class="btn btn-warning btn-sm">
+            <i class="bi bi-pencil-fill"></i> Modifier
+        </a>
+
+        <a href="create_update_delete.php?action=delete&id=<?= $f['id'] ?>" class="btn btn-danger btn-sm"
+            onclick="return confirm('Supprimer cette contribution ?')">
+            <i class="bi bi-trash-fill"></i> Supprimer
+        </a>
+
+    </div>
 
     <!-- DETAILS -->
     <div class="card shadow-sm page-card mb-4">

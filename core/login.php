@@ -214,11 +214,17 @@ if(isset($_POST['login'])){
                                         <i class="bi bi-lock-fill"></i>
                                     </span>
 
-                                    <input type="password" name="password" class="form-control" placeholder="********"
-                                        required>
+                                    <input type="password" name="password" id="mot_de_passe" class="form-control"
+                                        placeholder="********" required>
+
 
                                 </div>
-
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="showPassword">
+                                    <label class="form-check-label" for="showPassword">
+                                        Afficher le mot de passe
+                                    </label>
+                                </div>
                             </div>
 
                             <!-- BTN -->
@@ -269,6 +275,12 @@ if(isset($_POST['login'])){
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+    <script>
+    document.getElementById('showPassword').addEventListener('change', function() {
+        const password = document.getElementById('mot_de_passe');
+        password.type = this.checked ? 'text' : 'password';
+    });
+    </script>
 </body>
 
 </html>

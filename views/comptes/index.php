@@ -80,10 +80,10 @@ require_once '../../layouts/navbar_sidebar.php';
                     <div class="d-flex gap-1 flex-wrap">
 
                         <a href="view.php?id=<?= $c['id'] ?>" class="btn btn-primary btn-sm">
-                            <i class="bi bi-eye-fill"></i>
+                            <i class="bi bi-eye-fill"></i> Ouvrir ce compte
                         </a>
 
-                        <a href="depot.php?id=<?= $c['id'] ?>" class="btn btn-success btn-sm">
+                        <!-- <a href="depot.php?id=<?= $c['id'] ?>" class="btn btn-success btn-sm">
                             <i class="bi bi-arrow-left-right"></i>
                         </a>
 
@@ -95,7 +95,7 @@ require_once '../../layouts/navbar_sidebar.php';
                         <a href="create_update_delete.php?action=delete&id=<?= $c['id'] ?>"
                             class="btn btn-danger btn-sm" onclick="return confirm('Supprimer ce compte ?')">
                             <i class="bi bi-trash-fill"></i>
-                        </a>
+                        </a> -->
 
                     </div>
                 </td>

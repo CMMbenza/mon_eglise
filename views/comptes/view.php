@@ -90,6 +90,23 @@ require_once '../../layouts/navbar_sidebar.php';
 
     </div>
 
+    <div class="d-flex flex-wrap gap-2 mb-3">
+
+        <a href="depot.php?id=<?= $c['id'] ?>" class="btn btn-success btn-sm">
+            <i class="bi bi-cash-coin"></i> Effectuer un paiement
+        </a>
+
+        <a href="create_update_delete.php?action=edit&id=<?= $c['id'] ?>" class="btn btn-warning btn-sm">
+            <i class="bi bi-pencil-square"></i> Modifier
+        </a>
+
+        <a href="create_update_delete.php?action=delete&id=<?= $c['id'] ?>" class="btn btn-danger btn-sm"
+            onclick="return confirm('Supprimer ce compte ?')">
+            <i class="bi bi-trash-fill"></i> Supprimer
+        </a>
+
+    </div>
+
     <hr>
 
     <!-- MENSUEL -->

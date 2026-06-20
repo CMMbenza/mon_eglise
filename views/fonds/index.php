@@ -129,10 +129,13 @@ require_once '../../layouts/navbar_sidebar.php';
                             </td>
 
                             <td class="d-flex gap-2">
-
-                                <a href="view.php?id=<?= $f['id'] ?>" class="btn btn-primary btn-sm">
-                                    <i class="bi bi-eye-fill"></i>
+                                <a href="view.php?id=<?= $f['id'] ?>" class="btn btn-success btn-sm">
+                                    <i class="bi bi-folder2-open"></i> Ouvrir la contribution
                                 </a>
+                                <!-- <a href="souscrire_fidele.php?fonds_id=<?= $f['id'] ?>"
+                                    class="btn btn-info btn-sm text-white" title="Souscrire un fidèle">
+                                    <i class="bi bi-person-plus-fill"></i>
+                                </a>                                
 
                                 <a href="historique_paiements.php?id=<?= $f['id'] ?>" class="btn btn-success btn-sm">
                                     <i class="bi bi-clock-history"></i>
@@ -151,7 +154,7 @@ require_once '../../layouts/navbar_sidebar.php';
                                     class="btn btn-danger btn-sm"
                                     onclick="return confirm('Supprimer cette contribution ?')">
                                     <i class="bi bi-trash-fill"></i>
-                                </a>
+                                </a> -->
 
                             </td>
 
