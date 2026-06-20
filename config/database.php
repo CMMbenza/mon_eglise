@@ -4,7 +4,7 @@
 $host = 'localhost';
 $dbname = 'egliselystaberna_data';
 $username = 'egliselystaberna_user';
-$password = ']8H(ZHJ907CS0ijo';
+$password = 'u3E,E10w9Ke7%$h5';
 
 try {
 

@@ -10,6 +10,22 @@ if ($base_url === '') {
 }
 ?>
 
+<style>
+.offcanvas .nav-link {
+    border-radius: 8px;
+    transition: .2s;
+}
+
+.offcanvas .nav-link:hover {
+    background: rgba(255, 255, 255, .1);
+    padding-left: 15px;
+}
+
+.offcanvas {
+    width: 300px;
+}
+</style>
+
 <!-- MENU / NAVBAR -->
 <div class="bg-dark text-white px-3 py-2 d-flex align-items-center justify-content-between flex-wrap">
 
@@ -152,3 +168,129 @@ if ($base_url === '') {
     </div>
 
 </div>
+
+<!-- SIDEBAR MOBILE -->
+<div class="offcanvas offcanvas-start bg-dark text-white" tabindex="-1" id="sidebar">
+
+    <div class="offcanvas-header border-bottom border-secondary">
+
+        <h5 class="offcanvas-title">
+            <i class="bi bi-building"></i>
+            Gestion Église
+        </h5>
+
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas">
+        </button>
+
+    </div>
+
+    <div class="offcanvas-body">
+
+        <ul class="nav flex-column">
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/dashboard.php" class="nav-link text-white">
+                    <i class="bi bi-speedometer2 me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/fideles/" class="nav-link text-white">
+                    <i class="bi bi-people me-2"></i>
+                    Fidèles
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/cultes/" class="nav-link text-white">
+                    <i class="bi bi-book me-2"></i>
+                    Cultes
+                </a>
+            </li>
+
+            <li>
+                <hr class="border-secondary">
+            </li>
+
+            <li class="mb-2 text-uppercase small text-secondary">
+                Finances
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/depenses/" class="nav-link text-white">
+                    <i class="bi bi-cash-stack me-2"></i>
+                    Dépenses
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/fonds/" class="nav-link text-white">
+                    <i class="bi bi-wallet2 me-2"></i>
+                    Contributions
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/comptes/" class="nav-link text-white">
+                    <i class="bi bi-bank2 me-2"></i>
+                    Gestion des comptes
+                </a>
+            </li>
+
+            <li>
+                <hr class="border-secondary">
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/annonces/" class="nav-link text-white">
+                    <i class="bi bi-megaphone me-2"></i>
+                    Annonces
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/reports/" class="nav-link text-white">
+                    <i class="bi bi-bar-chart me-2"></i>
+                    Rapports
+                </a>
+            </li>
+
+            <?php if($_SESSION['user']['role'] == 'admin'): ?>
+            <li class="nav-item mb-2">
+                <a href="<?= $base_url ?>/views/users/" class="nav-link text-white">
+                    <i class="bi bi-person-gear me-2"></i>
+                    Gest. des utilisateurs
+                </a>
+            </li>
+            <?php endif; ?>
+
+            <li>
+                <hr class="border-secondary">
+            </li>
+
+            <li class="mb-3">
+                <div class="text-secondary small">
+                    Connecté en tant que
+                </div>
+
+                <div class="fw-bold">
+                    <i class="bi bi-person-circle"></i>
+                    <?= $_SESSION['user']['nom'] ?>
+                </div>
+            </li>
+
+            <li>
+                <a href="<?= $base_url ?>/core/logout.php" class="btn btn-danger w-100">
+                    <i class="bi bi-box-arrow-right"></i>
+                    Déconnexion
+                </a>
+            </li>
+
+        </ul>
+
+    </div>
+
+</div>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script> -->
